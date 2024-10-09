@@ -172,7 +172,6 @@
                                     mah:TextBoxHelper.ClearTextButton="False"
                                     mah:TextBoxHelper.UseFloatingWatermark="True"
                                     mah:TextBoxHelper.Watermark="Select a color"
-                                    IsEnabled="{Binding Theme, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=!System}"
                                     IsRecentColorPaletteVisible="False"
                                     SelectedColor="{Binding CurrentAccent, Delay=250}" />
                                 <Button
@@ -201,19 +200,6 @@
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="Checked">
                                             <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                </RadioButton>
-                                <RadioButton
-                                    Grid.Row="2"
-                                    Margin="{StaticResource XSmallTopMargin}"
-                                    Content="{x:Static properties:Resources.SettingsPageRadioButtonWindowsDefaultTheme}"
-                                    FontSize="{StaticResource MediumFontSize}"
-                                    GroupName="AppTheme"
-                                    IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=System}">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="Checked">
-                                            <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="System" />
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
                                 </RadioButton>

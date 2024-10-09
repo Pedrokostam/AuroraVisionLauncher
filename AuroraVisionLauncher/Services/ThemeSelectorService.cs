@@ -66,9 +66,9 @@ public class SuperLibraryThemeProvider : LibraryThemeProvider
     /// <inheritdoc/>
     public static new readonly SuperLibraryThemeProvider DefaultInstance = new SuperLibraryThemeProvider();
 
-    public SuperLibraryThemeProvider():base(true)
+    public SuperLibraryThemeProvider() : base(true)
     {
-            
+
     }
 
     public override LibraryTheme? GetLibraryTheme(DictionaryEntry dictionaryEntry)
@@ -123,7 +123,7 @@ public class ThemeSelectorService : IThemeSelectorService
 
     public ThemeSelectorService()
     {
-     
+
     }
 
 
@@ -150,8 +150,6 @@ public class ThemeSelectorService : IThemeSelectorService
     {
         SyncTheme(themeEnum);
         Theme activeTheme;
-        if (themeEnum != AppTheme.System)
-        {
             if (customColor is null)
             {
                 activeTheme = ThemeManager.Current.ChangeTheme(Application.Current, themeEnum.ToString(), false)!;
@@ -160,18 +158,7 @@ public class ThemeSelectorService : IThemeSelectorService
             {
                 activeTheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(themeEnum.ToString(), customColor.Value)!;
             }
-        }
-        else
-        {
-            activeTheme = ThemeManager.Current.DetectTheme()!;
-        }
-
-        var baseColor = themeEnum switch
-        {
-            AppTheme.System => Enum.Parse<AppTheme>(WindowsThemeHelper.GetWindowsBaseColor()),
-            _ => themeEnum,
-        };
-        var other = baseColor == AppTheme.Light ? _otherLight : _otherDark;
+        var other = themeEnum == AppTheme.Light ? _otherLight : _otherDark;
         foreach (var key in other.Keys)
         {
             activeTheme.Resources[key] = other[key];
@@ -183,11 +170,8 @@ public class ThemeSelectorService : IThemeSelectorService
 
     private static void SyncTheme(AppTheme themeEnum)
     {
-            ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
-        if (themeEnum == AppTheme.System)
-        {
-        }
-            ThemeManager.Current.SyncTheme();
+        ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
+        ThemeManager.Current.SyncTheme();
         //else
         //{
         //    ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithHighContrast;
@@ -204,10 +188,9 @@ public class ThemeSelectorService : IThemeSelectorService
             {
                 return theme;
             }
-            return AppTheme.System;
+            return AppTheme.Dark;
         }
-
-        return AppTheme.System;
+        return AppTheme.Dark;
     }
 
     public Color? GetCurrentAccent()

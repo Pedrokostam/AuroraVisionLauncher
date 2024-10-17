@@ -16,6 +16,7 @@ using Microsoft.Win32;
 using Windows.Networking.NetworkOperators;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using System.Management.Automation;
 
 namespace AuroraVisionLauncher.Services;
 public class FileAssociationService : IFileAssociationService
@@ -205,7 +206,7 @@ public class FileAssociationService : IFileAssociationService
         startInfo.ArgumentList.Add(GetParameterJson());
         return startInfo;
     }
-    public void SetAssociationsToApp(string? mainAppExecutablePath = null)
+    public async Task SetAssociationsToApp(string? mainAppExecutablePath = null)
     {
         var t = CheckCurrentAssociations(mainAppExecutablePath);
         mainAppExecutablePath ??= Environment.ProcessPath!;
@@ -214,15 +215,23 @@ public class FileAssociationService : IFileAssociationService
         //SetAppShellKeys(mainAppExecutablePath);
         //SetAssociations();
         //return;
-        using var tempScript = new VanishingScript();
-        var startInfo = GetStartInfo(mainAppExecutablePath, tempScript, runAsAdministrator: false);
-        var process = Process.Start(startInfo);
-        if (process is null)
-        {
-            return;
-        }
-        process.WaitForExit();
-        // TODO add checking whether association are correct
+        //using var tempScript = new VanishingScript();
+        //var startInfo = GetStartInfo(mainAppExecutablePath, tempScript, runAsAdministrator: false);
+
+        Assembly.GetExecutingAssembly();
+        using var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AuroraVisionLauncher.Services.Set-FileAssociations.ps1");
+        ArgumentNullException.ThrowIfNull(resourceStream);
+        using var re = new StreamReader(resourceStream);
+        var script = re.ReadToEnd();
+
+        PowerShell ps = PowerShell.Create();
+        ps.AddScript(script);
+        ps.AddParameter("KeyPhrase", GetKeyPhrase());
+        ps.AddParameter("RegistryAppName", RegistryAppName);
+        ps.AddParameter("MainAppExecutablePath", mainAppExecutablePath);
+        ps.AddParameter("ProtoAssociations", GetParameterJson());
+
+        await ps.InvokeAsync();
     }
     private void RemoveExplorerAssociations()
     {
@@ -342,8 +351,8 @@ public class FileAssociationService : IFileAssociationService
 
             using var userchoice = CreateOrOpenRegistryPathNonWritable("Software", "Microsoft", "Windows", "CurrentVersion", "Explorer", "FileExts", association.Extension, "UserChoice");
             var userChoiceValue = GetValue<string>(userchoice, "ProgId");
-            bool userChoiceGood = userChoiceValue is null || string.Equals(userChoiceValue , mainAppName, StringComparison.OrdinalIgnoreCase);
-   
+            bool userChoiceGood = userChoiceValue is null || string.Equals(userChoiceValue, mainAppName, StringComparison.OrdinalIgnoreCase);
+
             list.Add(new(association.Extension, classesGood && commandGood && userChoiceGood));
         }
         return list;
